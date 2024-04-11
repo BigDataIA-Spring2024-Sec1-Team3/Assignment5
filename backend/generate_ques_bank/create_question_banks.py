@@ -184,6 +184,35 @@ def uploading_analysis_file_to_aws(text):
         print("Exception in uploading_analysis_file_to_aws function: ", e)
         return "Failed upload"
 
+def fetch_summary_from_snowflake(topics):
+    '''
+    function to fetch summaries of given topics and combining it
+    '''
+    try:
+        conn, cfa_table_name = snowflake_connection()
+        
+        combined_summary_text=""
+        fetch_summary_query = f"SELECT SUMMARY FROM {cfa_table_name} WHERE TOPIC_NAME IN ({topics});"
+        
+        # Create a cursor
+        cur = conn.cursor()
+        
+        # Execute query to fetch rows from the Snowflake table
+        cur.execute(fetch_summary_query)
+        
+        # Fetch all rows and combine summaries
+        summaries = cur.fetchall()
+        # summaries = cur.fetchone()
+        for summary in summaries:
+            combined_summary_text += summary[0]
+            # combined_summary_text += summary
+        
+        return combined_summary_text
+
+    except Exception as e:
+        print("Exception in fetch_summary_from_snowflake function", e)
+        return ''
+
 def generate_ques_ans(combined_summary_text, set_name, num_questions, max_):
     '''function to 
         - fetch analyzed file from S3
@@ -260,35 +289,6 @@ def generate_ques_ans(combined_summary_text, set_name, num_questions, max_):
     
     except Exception as e:
         print("Exception in generate_ques_ans function", e)
-        return ''
-
-def fetch_summary_from_snowflake(topics):
-    '''
-    function to fetch summaries of given topics and combining it
-    '''
-    try:
-        conn, cfa_table_name = snowflake_connection()
-        
-        combined_summary_text=""
-        fetch_summary_query = f"SELECT SUMMARY FROM {cfa_table_name} WHERE TOPIC_NAME IN ({topics});"
-        
-        # Create a cursor
-        cur = conn.cursor()
-        
-        # Execute query to fetch rows from the Snowflake table
-        cur.execute(fetch_summary_query)
-        
-        # Fetch all rows and combine summaries
-        summaries = cur.fetchall()
-        # summaries = cur.fetchone()
-        for summary in summaries:
-            combined_summary_text += summary[0]
-            # combined_summary_text += summary
-        
-        return combined_summary_text
-
-    except Exception as e:
-        print("Exception in fetch_summary_from_snowflake function", e)
         return ''
     
 def upload_data_to_aws(output_csv_file):
