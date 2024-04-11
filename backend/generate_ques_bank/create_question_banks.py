@@ -202,10 +202,8 @@ def fetch_summary_from_snowflake(topics):
         
         # Fetch all rows and combine summaries
         summaries = cur.fetchall()
-        # summaries = cur.fetchone()
         for summary in summaries:
             combined_summary_text += summary[0]
-            # combined_summary_text += summary
         
         return combined_summary_text
 
