@@ -4,45 +4,48 @@ from langchain.chat_models import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage
 import configparser
 from operator import ge, le
-'''
+
 import snowflake.connector
-'''
+# from sqlalchemy import create_engine
 import pandas as pd
 
 
-config = configparser.RawConfigParser()
-config.read('./configuration.properties')
+config = configparser.ConfigParser()
+config.read('backend/configuration.properties')
 
 # Function to fetch data from Snowflake
 
 
 def fetch_data_from_snowflake():
-    '''
 
-    user = config['SNOWFLAKE']['Username'],
-    password = config['SNOWFLAKE']['Password'],
-    account = config['SNOWFLAKE']['Account'],
-    warehouse = config['SNOWFLAKE']['Warehouse'],
-    database = config['SNOWFLAKE']['Database'],
-    schema = config['SNOWFLAKE']['Schema']
+    # Read the configuration file
+    username = config['SNOWFLAKE']['user']
+    password = config['SNOWFLAKE']['password']
+    account = config['SNOWFLAKE']['account']
+    warehouse = config['SNOWFLAKE']['warehouse']
+    database = config['SNOWFLAKE']['database']
+    schema = config['SNOWFLAKE']['schema']
+    table = config['SNOWFLAKE']['cfa_table_name']
 
-    # Create a connection string
-    connection_string = f'snowflake://{user}:{password}@{account}/' \
-        f'?warehouse={warehouse}&database={database}&schema={schema}'
+    print(username, password, account, warehouse, database, schema)
+    conn = snowflake.connector.connect(
+        user=username,
+        password=password,
+        account=account,
+        warehouse=warehouse,
+        database=database,
+        schema=schema,
+        role='ACCOUNTADMIN'
+    )
 
-    # Create an engine for Snowflake Connection
-    engine = create_engine(connection_string)
-    print("Engine created for snowflake sqlalchemy")
+    print(conn)
+    sql = f"SELECT * FROM {database}.{schema}.{table};"
+    print(sql)
 
-    with engine.connect() as conn:
+    result = conn.cursor().execute(sql)
+    df = pd.DataFrame(result.fetch_pandas_all())
 
-        sql = "SELECT * FROM CFA_WEBSITE_DATA"
-        result = conn.execute(sql)
-        df = pd.DataFrame(result.fetchall(), columns=result.keys())
-
-    '''
-    df = pd.read_csv('./data/input/scraped_data.csv', sep='\t')
-
+    df = pd.read_csv('./backend/output/technical_documents.csv')
     return df
 
 
@@ -172,3 +175,6 @@ def generate_markdown_file(df):
         file.write(markdown_content)
 
     return markdown_file_path
+
+
+fetch_data_from_snowflake()

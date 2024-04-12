@@ -29,7 +29,7 @@ OPENAI_API_KEY = config['OPENAI']['OPENAI_API_KEY']
 
 
 def load_data():
-    loader1 = CSVLoader('./backend/output/technical_documents.csv')
+    loader1 = CSVLoader('./output/technical_documents.csv')
     doc = loader1.load()
     # Assuming `documents` is a list of Document objects
     list_of_dictionaries = [
@@ -137,11 +137,8 @@ def chunk_and_embed_data():
         index.upsert(vectors=zip(ids, embeds, metadatas))
         print(index.describe_index_stats())
 
-
-def similarity_search(query):
-
     text_field = "text"  # the metadata field that contains our text
-    index = "assigmment4"  # the name of the index we created
+    
     embed = OpenAIEmbeddings(
         model='text-embedding-ada-002',
         openai_api_key=OPENAI_API_KEY
@@ -151,13 +148,21 @@ def similarity_search(query):
     vectorstore = Pinecone(
         index, embed.embed_query, text_field
     )
+    return vectorstore
 
+
+def similarity_search(query):
+    
+    vectorstore = chunk_and_embed_data()
     response = vectorstore.similarity_search(
         query,  # our search query
         k=3  # return 3 most relevant docs
     )
 
-    return response
+    for document in response:
+        print(document.page_content)
+
+    return document
 
 
 def aws_connection():
@@ -235,17 +240,32 @@ def generate_openai_response(query, context):
 def qa_using_ks():
 
     df = fetch_from_s3()
+
     df = df.drop(columns=['Unnamed: 0'], axis=1)
-    new_df = df.copy()
 
-    # Use a lambda function to apply 'generate_openai_response' to both 'question' and 'answer' columns
-    new_df['openai_response'] = new_df.apply(lambda row: generate_openai_response(
-        row['question'], similarity_search(row['question'])), axis=1)
+    df["context"] = ""
 
-    new_df.to_csv(
-        './backend/output/qa_df_set_a_b_qa_with_openai_response.csv', index=False)
+    for index, row in df.iterrows():
 
-    return new_df
+        # Query OpenAI for each row and update the 'Technical Document' colum
+        df.at[index, 'context'] = similarity_search(
+            query=row['question']
+        )   
 
+    df['openai_answer'] = ""
 
-qa_using_ks()
+    for index, row in df.iterrows():
+
+        # Query OpenAI for each row and update the 'Technical Document' colum
+        df.at[index, 'openai_answer'] = generate_openai_response(
+            query=row['question'], context=str(row['context'])
+        )
+
+    df.to_csv(
+        '../output/qa_df_set_a_b_qa_with_openai_response.csv', index=False)
+    
+    return df
+
+    
+
+    
