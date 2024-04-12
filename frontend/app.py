@@ -1,7 +1,10 @@
-from frontend import generate_kb, query_data_comparison, query_similar_questions, generate_qb
+
 import re
 import streamlit as st
-
+import generate_kb
+import generate_qb
+import query_similar_questions
+import query_data_comparison
 # Main app logic starts here
 PAGES = {
     "Generate Knowledge Base": generate_kb,
