@@ -4,45 +4,33 @@
 
 [![Video](https://img.shields.io/badge/Video-CC6699?style=for-the-badge)](https://drive.google.com/file/d/1XGsVICAoXeOR9Hc9VX-W9RL_PZo417ND/view?usp=sharing)
 
+
 ## Problem Statement
 
-Many data-driven projects involve extracting data from various sources, such as CSV and XML files, and transforming it for analysis or storage. However, ensuring the quality and integrity of this data throughout the process can be challenging. Till now, we have made the ELT pipelines for extraction, schema validations and transformations. Now, the goal is to automate the entire process using AirFlow and develop API's with a user interface to give the end user the power to implement it all using single-click operations.
+This project aims to develop a structured database and text extraction system for finance professional development resources. By leveraging Models as a Service (MaaS) APIs such as Pinecone and OpenAI, the goal is to create knowledge summaries, generate question-answer sets, and implement a vector database query system. The objective is to enhance knowledge retrieval and question-answering capabilities for financial analysts, ultimately improving learning outcomes and efficiency in professional development.
 
 ## Project Goals
 
-The aim of this project is to develop a robust web application workflow for processing and extracting data from PDF files. Below is a breakdown of the tasks implemented in the flow to achieve our project objectives:
+The objective of this project is to develop a comprehensive web application aimed at enhancing the learning and testing capabilities of financial analysts using content from the CFA Institute. Below is a breakdown of the tasks implemented in the flow to achieve our project goals:
 
-### 1. User Interface
+### 1. Knowledge Base Creation
+- Generate detailed technical notes for each Learning Outcome Statement (LOS) using the introduction, summary, and LOS content as context.
+- Consolidate all notes into a single markdown document for streamlined access and reference.
+Segment and store each LOS and its corresponding notes in Pinecone for efficient retrieval.
+### 2. Question Bank Development
+- Analyze and mimic the format and complexity of CFA sample questions to construct two distinct sets of 50 questions each, designed to test understanding of the summarized topics.
+- Utilize the summaries as a source to ensure the questions are deeply rooted in the actual content.
+- Store the first set of questions (Set A) in Pinecone under distinct namespaces for questions and answers, and keep the second set (Set B) separate for later analysis.
+### 3. Retrieval-Augmented Testing
+- Implement a Retrieval-Augmented Generation (RAG) model to match questions from Set B with similar questions from Set A stored in Pinecone.
+- Use GPT-4 to generate answers for Set B questions based on the responses retrieved for Set A, providing justifications for each answer.
+- Evaluate the accuracy of the answers to gauge the effectiveness of this retrieval-based approach.
+### 4. Direct Knowledge Retrieval Comparison
+- Leverage the detailed knowledge base created in Task 1 to directly answer questions from both Set A and Set B.
+- Employ RAG to search for relevant LOS and their summaries that might contain the answers.
+- Compare the performance of direct knowledge retrieval against the retrieval-augmented approach from Task 3 in answering the combined 100 questions.
 
-- Implement a user-friendly interface to handle PDF uploads and user queries.
-
-### 2. Application Hosting and Containerization
-
-- Deploy Google Cloud Engines to host the web application, allowing for scalable processing power.
-- Utilize Docker to containerize the application, ensuring consistent environments and easy deployment across instances.
-
-### 3. Automation and Processing Pipeline
-
-- Integrate Streamlit to create an interactive web interface for users to upload PDF files directly into the system.
-- Utilize FastAPI to build efficient and performant RESTful APIs for handling user queries and automating interactions with the processing pipeline.
-
-### 4. Workflow Execution and Data Management
-
-- Implement an automated pipeline, triggered by Airflow, to manage tasks from PDF upload on S3 to deployment on GCP.
-- Store PDF files securely and manage them effectively using S3.
-
-### 5. Data Extraction and Validation
-
-- Run snowflake_objects.sql file to create objects into snowflake required for the application.
-- Automate the extraction of data from PDF files using Python scripts.
-- Validate extracted data with Pydantic to ensure integrity and structure before further processing.
-
-### 6. Data Loading and Storage
-
-- Load the validated data into Snowflake, a cloud data warehouse, for persistent storage, analysis, and reporting.
-- Ensure that both PDF content and metadata are handled correctly during the loading process.
-
-The successful implementation of these tasks will result in a streamlined process for PDF data management, from the point of user interaction to data storage and analysis. Our workflow is designed to be resilient, scalable, and maintainable, with clear separation of concerns and ease of monitoring.
+The successful execution of these tasks will culminate in a robust training and assessment tool that supports financial analysts in mastering CFA content through interactive testing and detailed explanations. This workflow is designed to be adaptive, scalable, and efficient, utilizing advanced AI techniques and vector database technology for enhanced learning outcomes.
 
 ---
 
@@ -54,12 +42,12 @@ The successful implementation of these tasks will result in a streamlined proces
 [![Amazon AWS](https://img.shields.io/badge/Amazon_AWS-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white)](https://aws.amazon.com/)
 [![Python](https://img.shields.io/badge/Python-FFD43B?style=for-the-badge&logo=python&logoColor=blue)](https://www.python.org/)
 [![Pandas](https://img.shields.io/badge/Pandas-2C2D72?style=for-the-badge&logo=pandas&logoColor=white)](https://pandas.pydata.org/)
-[![Apache Airflow](https://img.shields.io/badge/Airflow-017CEE?style=for-the-badge&logo=Apache%20Airflow&logoColor=white)](https://airflow.apache.org/)
 [![Docker](https://img.shields.io/badge/Docker-%232496ED?style=for-the-badge&logo=Docker&color=blue&logoColor=white)](https://www.docker.com)
 [![Google Cloud](https://img.shields.io/badge/Google_Cloud-%234285F4.svg?style=for-the-badge&logo=google-cloud&logoColor=white)](https://cloud.google.com)
-[![MongoDB](https://img.shields.io/badge/MongoDB-%234169E1?style=for-the-badge&logo=MongoDB&logoColor=%234169E1&color=black)](https://www.postgresql.org)
 [![Snowflake](https://img.shields.io/badge/snowflake-%234285F4?style=for-the-badge&logo=snowflake&link=https%3A%2F%2Fwww.snowflake.com%2Fen%2F%3F_ga%3D2.41504805.669293969.1706151075-1146686108.1701841103%26_gac%3D1.160808527.1706151104.Cj0KCQiAh8OtBhCQARIsAIkWb68j5NxT6lqmHVbaGdzQYNSz7U0cfRCs-STjxZtgPcZEV-2Vs2-j8HMaAqPsEALw_wcB&logoColor=white)
 ](https://www.snowflake.com/en/?_ga=2.41504805.669293969.1706151075-1146686108.1701841103&_gac=1.160808527.1706151104.Cj0KCQiAh8OtBhCQARIsAIkWb68j5NxT6lqmHVbaGdzQYNSz7U0cfRCs-STjxZtgPcZEV-2Vs2-j8HMaAqPsEALw_wcB)
+[![Pinecone](https://img.shields.io/badge/Pinecone-7B0099?style=for-the-badge&logo=pinecone&logoColor=white)](https://www.pinecone.io/)
+[![OpenAI](https://img.shields.io/badge/OpenAI-000000?style=for-the-badge&logo=openai&logoColor=white)](https://openai.com/)
 
 # Architecture:
 
@@ -67,7 +55,7 @@ The successful implementation of these tasks will result in a streamlined proces
 
 # Codelab
 
-link: https://codelabs-preview.appspot.com/?file_id=1pxHAQOrGnbCH2bQbzj-NBEtagLDbVzRR-P9cAtZ_J40#2
+link: https://codelabs-preview.appspot.com/file_id=16RIkuYAn1gVqzdY9vEQm-D05KU_TJGxsX5F_moBojMI#0
 
 ## Pre-requisites
 
@@ -82,7 +70,7 @@ Before running this project, ensure you have the following prerequisites set up:
   ```
 - **Config File**: Set up the `configurations.properties` file with the necessary credentials and configurations.
 
-- **Snowflake**: Use `airflow/dags/load/snowflake_objects.sql` to define the queries on snowflake. Also, ensure you have the necessary credentials and configurations set up in the `configurations.properties` file for connecting to Snowflake.
+- **Snowflake**: ensure you have the necessary credentials and configurations set up in the `configurations.properties` file for connecting to Snowflake.
 - **Google Cloud Platform**: Create a Google Cloud Engine. Ensure you have the necessary credentials and configurations set up in the `configurations.properties` file.
 
 ## Program Structure
@@ -191,58 +179,38 @@ index =
 
 4. Once you have set up your environment variables, Use `docker-compose up - build` to run the application
 
-5. Access the Airflow UI by navigating to http://localhost:8080/ in your web browser.
-
-6. Once the DAGs have run successfully, view the Streamlit application
-
-7. Access the Streamlit UI by navigating to http://localhost:8501/ in your web browser.
-
-8. Enter username and password if you've already logged in. Otherwise you can register yourself and then run the application.
+5. Access the Streamlit UI by navigating to http://localhost:8501/ in your web browser.
 
 ## Learning Outcomes
 
-By completing this assignment, you will:
+By completing this project, you will:
 
-1. **Cloud Services Deployment:**
+### 1. Knowledge Base Development:
+   - Construct a comprehensive knowledge base using Learning Outcome Statements (LOS) from the CFA Institute documents.
+   - Develop skills in organizing and summarizing complex financial content for educational purposes.
 
-   - Deploy and manage applications on GCP Engines.
-   - Understand the benefits of using cloud services for scalability and reliability.
+### 2. Question Bank Formulation:
+   - Design a question bank that mimics the format and complexity of CFA examination questions using AI-generated content.
+   - Gain experience in crafting multiple-choice questions that effectively test the understanding of financial concepts.
 
-2. **Containerization with Docker:**
+### 3. Vector Database Utilization:
+   - Implement and manage a vector database using Pinecone to store and retrieve question sets and learning summaries.
+   - Understand the importance and application of vector databases in managing and retrieving semantically similar queries.
 
-   - Create, manage, and deploy Docker containers to encapsulate application environments.
-   - Utilize Docker for ensuring consistent deployments and isolating dependencies.
+### 4. Retrieval-Augmented Generation (RAG) Deployment:
+   - Utilize Retrieval-Augmented Generation techniques to enhance question answering capabilities using AI models like GPT-4.
+   - Develop proficiency in integrating AI models with databases to fetch relevant content that aids in generating accurate answers.
 
-3. **Interactive Web Interface Creation:**
+### 5. Comparative Analysis of Knowledge Retrieval Methods:
+   - Compare and evaluate the effectiveness of direct knowledge retrieval versus retrieval-augmented methods in answering financial questions.
+   - Learn to analyze the performance of different AI-driven retrieval methods to determine the best approach for specific use cases.
 
-   - Design and implement interactive web interfaces using frameworks like Streamlit.
-   - Handle file uploads and user input in a web application context.
+### 6. Web Application Development for Educational Tools:
+   - Create a multipage Streamlit application that serves as an educational tool for financial analysts.
+   - Develop an understanding of how to build interactive and user-friendly educational web applications.
 
-4. **API Development:**
 
-   - Build RESTful APIs with FastAPI to handle web requests and automate backend processes.
-   - Integrate API endpoints with the user interface and processing pipeline.
-
-5. **Automated Workflow Management:**
-
-   - Use Apache Airflow to automate and manage the workflow pipeline.
-   - Understand how to trigger and schedule tasks based on events or conditions.
-
-6. **Data Extraction Techniques:**
-
-   - Develop scripts to extract data from PDF documents.
-   - Automate the process of extracting structured data from various document formats.
-
-7. **Data Warehousing and ETL Processes:**
-
-   - Load and transform data into a data warehouse like Snowflake.
-   - Appreciate the role of ETL (Extract, Transform, Load) processes in data analytics.
-
-8. **Data Security and Storage:**
-   - Manage secure storage of files using appropriate file storage solutions.
-   - Understand the considerations for data security in cloud-based storage.
-
-These outcomes will equip learners with the skills and knowledge necessary to architect and implement scalable and efficient data processing systems in a cloud environment, with a focus on containerized applications and automated workflows.
+These outcomes will provide learners with advanced skills in creating and managing educational content and tools, specifically in the financial sector, leveraging the latest technologies in AI and vector databases. This project will also enhance understanding of AI applications in education and test preparation.
 
 ## Team Information and Contribution
 
