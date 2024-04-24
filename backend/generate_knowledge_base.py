@@ -15,40 +15,37 @@ config.read('backend/configuration.properties')
 
 # Function to fetch data from Snowflake
 
+def snowflake_connection():
+    try:
+        # Snowflake details
+        config = configparser.ConfigParser()
+        config.read('backend/configuration.properties')
+        
+        user = config['SNOWFLAKE']['user']
+        password = config['SNOWFLAKE']['password']
+        account = config['SNOWFLAKE']['account']
+        role = config['SNOWFLAKE']['role']
+        warehouse = config['SNOWFLAKE']['warehouse']
+        database = config['SNOWFLAKE']['database']
+        schema = config['SNOWFLAKE']['schema']
+        cfa_table = config['SNOWFLAKE']['cfa_table_name']
+        md_table = config['SNOWFLAKE']['md_table_name']
 
-def fetch_data_from_snowflake():
-
-    # Read the configuration file
-    username = config['SNOWFLAKE']['user']
-    password = config['SNOWFLAKE']['password']
-    account = config['SNOWFLAKE']['account']
-    warehouse = config['SNOWFLAKE']['warehouse']
-    database = config['SNOWFLAKE']['database']
-    schema = config['SNOWFLAKE']['schema']
-    table = config['SNOWFLAKE']['cfa_table_name']
-
-    print(username, password, account, warehouse, database, schema)
-    conn = snowflake.connector.connect(
-        user=username,
-        password=password,
-        account=account,
-        warehouse=warehouse,
-        database=database,
-        schema=schema,
-        role='ACCOUNTADMIN'
-    )
-
-    print(conn)
-    sql = f"SELECT * FROM {database}.{schema}.{table};"
-    print(sql)
-
-    result = conn.cursor().execute(sql)
-    df = pd.DataFrame(result.fetch_pandas_all())
-
-    df = pd.read_csv('./backend/output/technical_documents.csv')
-    return df
-
-
+        conn = snowflake.connector.connect(
+                    user=user,
+                    password=password,
+                    account=account,
+                    warehouse=warehouse,
+                    database=database,
+                    schema=schema,
+                    role=role
+                    )
+        
+        return conn, cfa_table, md_table
+    except Exception as e:
+        print("Exception in snowflake_connection function: ",e)
+        return 
+    
 def filter_dataframe(df, topic_names):
     '''
     # Filter the dataframe for the specified topic names
@@ -107,7 +104,6 @@ def query_openai_for_technical_document(learning_outcome, summary, api_key):
 def generate_technical_documents(df):
 
     api_key = config['OPENAI']['OPENAI_API_KEY']
-    print(api_key)
 
     # Append a blank "Technical Document" column
     df["technical_document"] = ""
@@ -120,39 +116,6 @@ def generate_technical_documents(df):
             summary=row['summary'],
             api_key=api_key
         )
-    '''
-    try:
-        # Write the data to Snowflake
-        conn = snowflake.connector.connect(
-            user=config['SNOWFLAKE']['Username'],
-            password=config['SNOWFLAKE']['Password'],
-            account=config['SNOWFLAKE']['Account'],
-            warehouse=config['SNOWFLAKE']['Warehouse'],
-            database=config['SNOWFLAKE']['Database'],
-            schema=config['SNOWFLAKE']['Schema']
-        )
-        filtered_table_name = config['SNOWFLAKE']['Filtered_Table_Name']
-
-        cur = conn.cursor()
-
-        # Create the table if it does not exist
-        create_table_sql = f"CREATE OR REPLACE TABLE {filtered_table_name} (topic_name VARCHAR, learning_outcome VARCHAR, summary VARCHAR, technical_document VARCHAR)"
-        cur.execute(create_table_sql)
-
-        insert_data_sql = f"INSERT INTO {filtered_table_name} (topic_name, learning_outcome, summary, technical_document) VALUES (%s, %s, %s, %s)"
-
-        # Iterate through the DataFrame and insert each row
-        for index, row in df.iterrows():
-            # Parameters to insert for each row
-            data_tuple = (row['topic_name'],
-                          row['learning_outcome'], row['summary'], row['technical_document'])
-            # Execute the insert command with the parameters
-            cur.execute(insert_data_sql, data_tuple)
-
-    except Exception as e:
-        print(e)
-
-    '''
 
     df = df.drop(columns=['summary'])
     df.to_csv('./data/output/technical_documents1.csv', index=False)
@@ -176,5 +139,3 @@ def generate_markdown_file(df):
 
     return markdown_file_path
 
-
-fetch_data_from_snowflake()

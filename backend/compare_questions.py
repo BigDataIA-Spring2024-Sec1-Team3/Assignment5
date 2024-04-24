@@ -2,6 +2,9 @@ from openai import OpenAI
 import configparser
 from pinecone import Pinecone
 import csv
+import pandas as pd
+import boto3
+import os
 
 def openai_connection():
     try:
@@ -40,6 +43,27 @@ def fetch_question_answer(qa_id, set_a_file):
                 return row['question'], row['answer']
     return None, None
 
+def aws_connection():
+    try:
+        # AWS details fetch
+        config = configparser.ConfigParser()
+        config.read('backend/configuration.properties')
+        
+        # s3 connection details
+        aws_access_key = config['AWS']['access_key']
+        aws_secret_key = config['AWS']['secret_key']
+        bucket_name = config['AWS']['bucket']
+        part3_filename = config['AWS']['part3_filename']
+        part3_folder = config['AWS']['part3_folder']
+        
+        s3_boto3_client = boto3.client('s3', aws_access_key_id= aws_access_key, aws_secret_access_key=aws_secret_key)
+        
+        return s3_boto3_client, bucket_name, part3_filename, part3_folder
+    
+    except Exception as e:
+        print("Exception in aws_connection function: ",e)
+        return 
+
 def compare_SetA_SetB():
     try:
         openai_client = OpenAI(api_key=openai_connection())
@@ -53,8 +77,13 @@ def compare_SetA_SetB():
         
         correct=0
         
+        s3_client, bucket_name, part3_filename, part3_folder = aws_connection()
+        
         with open(set_b_file, newline='', encoding='utf-8') as csvfile:
             reader = csv.DictReader(csvfile, delimiter='|')
+            
+            part3_report= pd.DataFrame(columns=['Question', 'GPT Explanation', 'GPT Answer', 'KB Answer', 'Match'])
+            
             
             for row in reader:
                 question = row["question"]
@@ -78,18 +107,20 @@ def compare_SetA_SetB():
                         context = context.replace("Answer: :", "Answer:")
 
                 prompt= f'''
-                You are provided with a multiple choice question with 4 options out of which one is right. You are also also provided with 3 similar questions with their respective correct answers, which you need to use as reference to answer the question provided. Give me the correct answer choice with explanation justifying why you chose that answer. I need your response strictly in the following format and no other extra field or text should be present in your response.\n
-                Answer:
-                Explanation:
+                You are provided with a multiple choice question with 4 options out of which one is right. You are also also provided with 3 similar questions with their respective correct answers, which you need to use as reference to answer the question provided. Give me the correct answer choice with explanation justifying why you chose that answer. 
                 Reference Questions with Answers:
                 {context}
                 Your question to answer:
-                {question}'''
+                {question}
+                I need your response strictly in the following format and no other extra field or text should be present in your response.\n
+                Answer:
+                Explanation:
+                '''
 
                 formatted_answer = answer.split()[1][0]
 
                 response = openai_client.chat.completions.create(
-                    model="gpt-4",
+                    model="gpt-3.5-turbo-0125",
                     messages=[
                         {
                             "role": "user",
@@ -97,13 +128,28 @@ def compare_SetA_SetB():
                         }
                     ],
                     temperature=0.1
-                )       
+                )    
                 
                 gpt_response = response.choices[0].message.content
                 formatted_gpt_response = gpt_response.split()[1][0]
+
+                explanation = gpt_response.split("Explanation:")[1].strip()
+                match =0
                 if formatted_gpt_response == formatted_answer:
                     correct += 1
+                    match=1
+                    
+                    
+                part3_report.loc[len(part3_report.index)]= [question, explanation, formatted_gpt_response, formatted_answer, match]
                 
+            part3_report.to_csv(part3_filename, index=True, header=True, sep="|")
+                
+            # Upload the file to S3
+            response = s3_client.upload_file(part3_filename, bucket_name, part3_folder+part3_filename)
+                
+            # Delete the temporary downloaded file
+            os.remove(part3_filename)
+            
             return correct
         
         
@@ -116,4 +162,3 @@ def main():
     correctAnswers= compare_SetA_SetB()
     print("Number of correctly guessed answers from Set B: ",correctAnswers)
     
-main()
